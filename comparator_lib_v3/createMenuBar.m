@@ -15,8 +15,25 @@ function createMenuBar(fig)
            'MenuSelectedFcn', @(src, evt) clearAll(fig));
     
     analysisMenu = uimenu(fig, 'Text', 'Analysis');
+    uimenu(analysisMenu, 'Text', 'EIS Grid (All SOC Levels)', ...
+           'Accelerator', 'G', ...
+           'MenuSelectedFcn', @(src, evt) launchEISGrid(fig));
     uimenu(analysisMenu, 'Text', 'Compare at Fixed SOC...', ...
            'MenuSelectedFcn', @(src, evt) compareAtFixedSOC(fig));
     uimenu(analysisMenu, 'Text', 'Generate Report...', ...
            'MenuSelectedFcn', @(src, evt) generateReport(fig));
+end
+
+function launchEISGrid(fig)
+    % Launch EIS Grid view for selected batteries
+    batteryData = getappdata(fig, 'batteryData');
+    currentIdx = getappdata(fig, 'currentBatteryIdx');
+
+    if isempty(currentIdx) || batteryData.count == 0
+        msgbox('Please load and select at least one battery dataset first.', ...
+               'No Data Selected', 'warn');
+        return;
+    end
+
+    plotEISGrid(batteryData, currentIdx);
 end
