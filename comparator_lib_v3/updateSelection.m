@@ -64,7 +64,24 @@ function updateSelection(fig)
     % Enable controls based on view type
     controls = getappdata(fig, 'controls');
     set(controls.socSlider, 'Enable', 'on');
-    
+
+    % Calculate and cache combined EIS limits for selected datasets
+    combinedXlim = [Inf, -Inf];
+    combinedYlim = [Inf, -Inf];
+    for i = 1:length(selected)
+        dataset = batteryData.datasets(selected(i));
+        if isfield(dataset, 'cachedEISLimits')
+            lims = dataset.cachedEISLimits;
+            combinedXlim = [min(combinedXlim(1), lims.xlim(1)), max(combinedXlim(2), lims.xlim(2))];
+            combinedYlim = [min(combinedYlim(1), lims.ylim(1)), max(combinedYlim(2), lims.ylim(2))];
+        end
+    end
+    [combinedXlim, combinedYlim] = nice_axis_limits(combinedXlim, combinedYlim);
+    setappdata(fig, 'cachedCombinedLimits', struct('xlim', combinedXlim, 'ylim', combinedYlim));
+
+    % Initialize persistent plot handles for selected datasets
+    initializePersistentPlots(fig, selected);
+
     % Update plots
     updatePlotsComparator(fig);
 end

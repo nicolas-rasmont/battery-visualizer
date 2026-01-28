@@ -9,5 +9,14 @@ function changeComparisonMode(fig, evt)
         setappdata(fig, 'comparisonMode', 'sidebyside');
     end
     
+    % Reset persistent handles since comparison mode changed
+    setappdata(fig, 'plotCache', []);
+
+    % Reinitialize plots for new comparison mode
+    currentIdx = getappdata(fig, 'currentBatteryIdx');
+    if ~isempty(currentIdx)
+        initializePersistentPlots(fig, currentIdx);
+    end
+
     updatePlotsComparator(fig);
 end

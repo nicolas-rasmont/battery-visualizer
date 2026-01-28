@@ -1,39 +1,76 @@
 function wireSOCSlider(fig)
-    controls = getappdata(fig,'controls');
+    % Wire up SOC slider with optimized event handling
+    %
+    % Uses a single PostSet listener for live updates during dragging,
+    % with debouncing to prevent redundant redraws.
 
-    % Keep keyboard/page-up/down & mouse-up working via the slider callback
-    set(controls.socSlider, 'Callback', @(~,~) onSOCSliderChanged(fig));
+    controls = getappdata(fig, 'controls');
 
-    % Try a property listener that fires while dragging on newer MATLAB (HG2+)
+    % Initialize tracking state
+    setappdata(fig, 'lastSOCIndex', []);
+    setappdata(fig, 'isUpdating', false);
+
+    % Use PostSet listener for live updates (fires during drag)
     try
-        h = addlistener(controls.socSlider, 'Value', 'PostSet', @(~,~) onSOCSliderChanged(fig));
-        setappdata(fig, 'socSliderListener', h);  % keep it alive
+        h = addlistener(controls.socSlider, 'Value', 'PostSet', ...
+            @(~,~) debouncedSliderUpdate(fig));
+        setappdata(fig, 'socSliderListener', h);
     catch
-        % If not supported, the motion poller below handles live updates
+        % Fallback for older MATLAB: use regular callback
+        set(controls.socSlider, 'Callback', @(~,~) debouncedSliderUpdate(fig));
     end
-
-    % Motion poller: runs often, but only triggers a replot when the discrete index changes
-    set(fig, 'WindowButtonMotionFcn', @(~,~) socMotionHandler(fig));
-
-    % Track last discrete index to avoid redundant replots
-    setappdata(fig,'lastSOCIndex', []);
 end
 
-function socMotionHandler(fig)
-    controls = getappdata(fig,'controls');
-    if isempty(controls) || ~ishandle(controls.socSlider) ...
-            || strcmp(get(controls.socSlider,'Enable'),'off')
+function debouncedSliderUpdate(fig)
+    % Debounced slider update - only fires when discrete index changes
+    % and prevents reentrant calls
+
+    % Check for reentrant call
+    if getappdata(fig, 'isUpdating')
         return;
     end
 
-    % Quantize to discrete index
-    rawIdx = get(controls.socSlider,'Value');
-    maxN   = round(get(controls.socSlider,'Max'));
-    idx    = max(1, min(round(rawIdx), maxN));
+    controls = getappdata(fig, 'controls');
+    socVals = getappdata(fig, 'socTickValues');
 
-    last = getappdata(fig,'lastSOCIndex');
-    if isempty(last) || idx ~= last
-        onSOCSliderChanged(fig);              % snaps + replots
-        setappdata(fig,'lastSOCIndex', idx);
+    if isempty(controls) || ~ishandle(controls.socSlider)
+        return;
     end
+
+    % Get current discrete index
+    rawIdx = get(controls.socSlider, 'Value');
+    maxN = round(get(controls.socSlider, 'Max'));
+    idx = max(1, min(round(rawIdx), maxN));
+
+    % Check if index actually changed
+    lastIdx = getappdata(fig, 'lastSOCIndex');
+    if ~isempty(lastIdx) && idx == lastIdx
+        return;  % No change, skip update
+    end
+
+    % Mark as updating to prevent reentrant calls
+    setappdata(fig, 'isUpdating', true);
+    setappdata(fig, 'lastSOCIndex', idx);
+
+    try
+        % Snap slider to discrete position
+        if abs(rawIdx - idx) > 1e-9
+            set(controls.socSlider, 'Value', idx);
+        end
+        setappdata(fig, 'currentSOCIndex', idx);
+
+        % Update SOC display text
+        if ~isempty(socVals) && idx <= length(socVals)
+            socValue = socVals(idx);
+            set(controls.socDisplay, 'String', sprintf('%.1f%%', socValue));
+        end
+
+        % Update plots
+        updatePlotsComparator(fig);
+    catch ME
+        % Log error but don't crash
+        warning('Slider update error: %s', ME.message);
+    end
+
+    setappdata(fig, 'isUpdating', false);
 end

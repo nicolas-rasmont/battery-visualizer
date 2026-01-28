@@ -1,4 +1,6 @@
-addpath(genpath('.\')) 
+% Add required library paths
+addpath(genpath('shared_utils'));
+addpath(genpath('single_viz_lib')); 
 dataDirPath = 'C:\Users\CV166\Documents\LabWindowsCVI\BatteryTester\battery-tester\data\SOCEIS180Run';
 
 BatteryEISSummary = batteryEISSummaryReader(dataDirPath);

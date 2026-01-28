@@ -22,5 +22,14 @@ function changeViewType(fig, evt)
         set(controls.nextBtn, 'Enable', 'off');
     end
     
+    % Reset persistent handles since view type changed
+    setappdata(fig, 'plotCache', []);
+
+    % Reinitialize plots for new view type
+    currentIdx = getappdata(fig, 'currentBatteryIdx');
+    if ~isempty(currentIdx)
+        initializePersistentPlots(fig, currentIdx);
+    end
+
     updatePlotsComparator(fig);
 end

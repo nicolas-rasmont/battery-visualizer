@@ -52,6 +52,15 @@ function addBattery(fig)
         newDataset.chargeData = chargeData;
         newDataset.color = getDatasetColor(fig, batteryData.count + 1);
         newDataset.loadTime = datetime('now');
+
+        % Pre-calculate and cache EIS axis limits for this dataset
+        if ~isempty(socEIScan) && isfield(socEIScan, 'ValidScans')
+            validScans = find(socEIScan.ValidScans);
+            [xlims, ylims] = calculateGlobalLimits(socEIScan, validScans);
+            newDataset.cachedEISLimits = struct('xlim', xlims, 'ylim', ylims);
+        else
+            newDataset.cachedEISLimits = struct('xlim', [0 1], 'ylim', [0 1]);
+        end
         
         % Add to battery data
         batteryData.count = batteryData.count + 1;

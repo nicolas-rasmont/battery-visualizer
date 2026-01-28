@@ -1,4 +1,6 @@
-addpath(genpath('baseline_comparator_lib_v2')) 
+% Add required library paths
+addpath(genpath('shared_utils'));
+addpath(genpath('baseline_comparator_lib_v2')); 
 
 % Load data structures
 % data1 = readBaseline('W:\batPhys\scripts\battery-visualizer\battery data\baseline_20250827_130120');
@@ -46,19 +48,19 @@ addpath(genpath('baseline_comparator_lib_v2'))
 % data15 = readBaseline("W:\batPhys\scripts\battery-visualizer\battery data\temp_ramp_20251111_171004");
 % data15.identifier='Series O';
 
-data16 = readBaseline("W:\batPhys\scripts\battery-visualizer\battery data\baseline_20260114_122819");
-data16.identifier='Series P';
+% data16 = readBaseline("W:\batPhys\scripts\battery-visualizer\battery data\baseline_20260114_122819");
+% data16.identifier='Series P';
+% 
+% data17 = readBaseline("W:\batPhys\scripts\battery-visualizer\battery data\BT_16_baseline_20260126_180202");
+% data17.identifier='Series BT16';
 
-data17 = readBaseline("W:\batPhys\scripts\battery-visualizer\battery data\BT_16_baseline_20260126_180202");
-data17.identifier='Series BT16';
-
-data18 = readBaseline("W:\batPhys\scripts\battery-visualizer\battery data\BT17_baseline_20260115_154856");
+data18 = readBaseline(".\battery data\BT17_baseline_20260115_154856");
 data18.identifier='Series BT17';
 
-data19 = readBaseline("W:\batPhys\scripts\battery-visualizer\battery data\BT20_baseline_20260123_183439");
-data19.identifier='Series BT20';
+% data19 = readBaseline("W:\batPhys\scripts\battery-visualizer\battery data\BT20_baseline_20260123_183439");
+% data19.identifier='Series BT20';
 
 % Launch comparison GUI
-compareBaselineGUI(data16,data17,data18,data19);
+compareBaselineGUI(data18);
 
 %compareThermalRampRunawayGUI(data15);

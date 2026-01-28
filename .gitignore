@@ -1,0 +1,25 @@
+# MATLAB autosave files
+*.asv
+
+# MATLAB generated files
+*.mex*
+*.mlappinstall
+*.mltbx
+
+# MATLAB crash reports
+*.dmp
+
+# Simulink cache
+*.slxc
+
+# Build folders
+codegen/
+slprj/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE settings
+.vscode/
+.idea/
